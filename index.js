@@ -120,6 +120,7 @@ class ListBox extends Widget
         term("]");
         rowRect.x += 4;
       }
+      this.rows[rowId + this.topVisibleIndex].rect = rowRect;
       this.rowRenderer.render(rowRect, this.rows[rowId + this.topVisibleIndex]);
     }
   }
@@ -147,6 +148,16 @@ class ListBox extends Widget
       }
       */
     }
+    if (name === "MOUSE_WHEEL_UP") {
+      let was = this.topVisibleIndex;
+      this.topVisibleIndex = clamp(this.topVisibleIndex - 1, 0, this.rows.length);
+      if(was === this.topVisibleIndex) return;
+    }
+    if (name === "MOUSE_WHEEL_DOWN") {
+      let was = this.topVisibleIndex;
+      this.topVisibleIndex = clamp(this.topVisibleIndex + 1, 0, (this.rows.length - this.visibleRowCount));
+      if(was === this.topVisibleIndex) return;
+    }
     if (name === "PAGE_DOWN") {
       this.topVisibleIndex = clamp(this.topVisibleIndex + this.visibleRowCount, 0, (this.rows.length - this.visibleRowCount));
     }
@@ -156,12 +167,25 @@ class ListBox extends Widget
     if (name === " ") {
       this.rows[this.selectedRow].selected = !this.rows[this.selectedRow].selected; 
     }
+    if (name === 'MOUSE_LEFT_BUTTON_RELEASED') {
+      for (let rowId = 0; (rowId + this.topVisibleIndex < this.rows.length && rowId < this.visibleRowCount); ++rowId) {
+        let row = this.rows[rowId + this.topVisibleIndex];
+        if(row.rect.y === data.y) { // TODO check x match
+          this.selectedRow = rowId + this.topVisibleIndex;
+          // checkbox area
+          if(data.x <= row.rect.x) { // TODO use actual checkbox coords
+            row.selected = !row.selected;
+          }
+        }
+      }
+    }
     this.render({
       x:2,
       y:2,
       w:100,
       h:10
     });
+
   }
 }
 
@@ -197,7 +221,7 @@ term.on( 'terminal' , function( name , data ) {
 } ) ;
 
 term.on( 'mouse' , function( name , data ) {
-    //console.log( "'mouse' event:" , name , data ) ;
+  focusWidget.onKey(name, null, data);
 } ) ;
 
 function redraw()
