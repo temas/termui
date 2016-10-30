@@ -1,0 +1,9 @@
+{
+  "name": "termui",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "terminal-kit": "^0.24.30"
+  }
+}
